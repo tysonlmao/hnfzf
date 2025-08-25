@@ -48,7 +48,7 @@ services:
       dockerfile: Dockerfile.frontend
     container_name: hnfzf-frontend
     ports:
-      - "80:80"
+      - "8080:8080"
     depends_on:
       - backend
     networks:
