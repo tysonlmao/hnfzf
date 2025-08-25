@@ -1,0 +1,45 @@
+services:
+  # Development Database
+  database:
+    image: postgres:15-alpine
+    container_name: hnfzf-db-dev
+    environment:
+      POSTGRES_DB: hnfzf_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5432"
+    networks:
+      - hnfzf-dev-network
+
+  # Backend Development (with hot reload)
+  backend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: development
+    container_name: hnfzf-backend-dev
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@database:5432/hnfzf_dev
+      - PORT=1337
+    ports:
+      - "1338:1337"
+    depends_on:
+      - database
+    networks:
+      - hnfzf-dev-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev"]
+
+volumes:
+  postgres_dev_data:
+
+networks:
+  hnfzf-dev-network:
+    driver: bridge

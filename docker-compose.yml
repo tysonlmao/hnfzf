@@ -1,0 +1,83 @@
+services:
+  # PostgreSQL Database
+  database:
+    image: postgres:15-alpine
+    container_name: hnfzf-db
+    environment:
+      POSTGRES_DB: hnfzf
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - hnfzf-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API Service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: hnfzf-backend
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@database:5432/hnfzf
+      - PORT=1337
+    ports:
+      - "1337:1337"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - hnfzf-network
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # Frontend Service
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: hnfzf-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - hnfzf-network
+    restart: unless-stopped
+
+  # Ingestion Service (can be run on-demand)
+  ingest:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: hnfzf-ingest
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@database:5432/hnfzf
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - hnfzf-network
+    profiles:
+      - ingest
+    command: ["node", "dist/ingest.js"]
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  postgres_data:
+
+networks:
+  hnfzf-network:
+    driver: bridge
