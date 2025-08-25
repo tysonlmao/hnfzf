@@ -26,7 +26,7 @@ docker-compose ps
 
 echo ""
 echo "✅ HNFZF is running!"
-echo "📱 Frontend: http://localhost"
+echo "📱 Frontend: http://localhost:8080"
 echo "🔧 Backend: http://localhost:1337"
 echo "💾 Database: localhost:5432"
 echo ""

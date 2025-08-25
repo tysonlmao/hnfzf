@@ -81,7 +81,7 @@ This runs:
 ### 🌐 Frontend
 
 - **Build**: Multi-stage (Node.js → Nginx)
-- **Port**: 80
+- **Port**: 8080
 - **Features**: React app with API proxy
 
 ### 📥 Ingestion Service
