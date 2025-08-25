@@ -48,16 +48,55 @@ export const ingestProduct = async (searchTerm: string): Promise<Product[]> => {
 };
 
 // test with:
-// npx ts-node src/ingest.ts "[product code]"
+// npx ts-node src/ingest.ts "[product code]" [limit]
 if (require.main === module) {
   const searchTerm = process.argv[2] || "WH1000XM4B";
+  const limit = parseInt(process.argv[3]) || 0; // 0 means no limit
   const startTime = Date.now();
+
+  console.log(
+    `\n🔍 Searching for: "${searchTerm}"${
+      limit > 0 ? ` (max ${limit} results)` : ""
+    }\n`
+  );
 
   ingestProduct(searchTerm)
     .then((products) => {
       const duration = Date.now() - startTime;
-      console.log(JSON.stringify(products, null, 2));
-      console.log(`\n⏱️  Request took ${duration}ms\n`);
+
+      if (products.length === 0) {
+        console.log("❌ No products found\n");
+        return;
+      }
+
+      // Apply limit if specified
+      const limitedProducts = limit > 0 ? products.slice(0, limit) : products;
+
+      console.log(
+        `✅ Found ${products.length} product(s)${
+          limit > 0 ? `, showing ${limitedProducts.length}` : ""
+        }\n`
+      );
+
+      limitedProducts.forEach((product, index) => {
+        console.log(`📦 Product ${index + 1}/${limitedProducts.length}`);
+        console.log("━".repeat(60));
+        console.log(`SKU: ${product.productID}`);
+        console.log(`Name: ${product.productName}`);
+        console.log(`Price: ${product.price || "N/A"}`);
+        console.log(`URL: ${product.productUrl}`);
+        console.log("━".repeat(60));
+      });
+
+      if (limit > 0 && products.length > limit) {
+        console.log(
+          `\n📊 ... and ${products.length - limit} more products available\n`
+        );
+      }
+
+      console.log(`\n⏱️  Request completed in ${duration}ms\n`);
     })
-    .catch((err) => console.error(err));
+    .catch((err) => {
+      console.error("\n❌ Error occurred:", err.message);
+    });
 }
