@@ -158,6 +158,7 @@ function App() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Search Section */}
+        <h1 className="text-center mb-5">hnfzf</h1>
         <Card className="max-w-2xl mx-auto mb-8">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl">Product Search</CardTitle>
