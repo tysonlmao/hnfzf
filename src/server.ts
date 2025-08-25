@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import cors from "cors";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import dotenv from "dotenv";
@@ -14,6 +15,22 @@ const pool = new Pool({
 });
 
 const db = drizzle(pool);
+
+// Configure CORS to allow requests from the frontend
+server.use(
+  cors({
+    origin: [
+      "http://localhost:8080",
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://localhost:4173",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 server.use(express.json());
 
 // API routes
