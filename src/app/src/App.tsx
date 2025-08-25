@@ -1,6 +1,13 @@
 import { useState } from "react";
 import axios from "axios";
-import { Search, Package, DollarSign, Info } from "lucide-react";
+import {
+  Search,
+  Package,
+  DollarSign,
+  Info,
+  ExternalLink,
+  Hash,
+} from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import {
@@ -11,6 +18,14 @@ import {
   CardTitle,
 } from "./components/ui/card";
 import { Badge } from "./components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./components/ui/dialog";
 import "./App.css";
 
 interface Product {
@@ -138,35 +153,159 @@ function App() {
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {products.map((product) => (
-                <Card
-                  key={product.id}
-                  className="group hover:shadow-lg transition-all duration-200 border-border hover:border-primary/20"
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <Badge variant="primary" className="text-xs">
-                        {product.productID || "N/A"}
-                      </Badge>
-                      <Package className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <Dialog key={product.id}>
+                  <DialogTrigger asChild>
+                    <Card className="group hover:shadow-lg transition-all duration-200 border-border hover:border-primary/20 cursor-pointer hover:scale-[1.02]">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <Badge variant="primary" className="text-xs">
+                            {product.productID || "N/A"}
+                          </Badge>
+
+                          <div className="flex items-center gap-1">
+                            <Package className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <ExternalLink className="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors" />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="w-4 h-4 text-emerald-500" />
+                          <span className="text-2xl text-emerald-500">
+                            {formatPrice(product.price).replace("$", "")}
+                          </span>
+                        </div>
+                        <CardTitle className="text-lg line-clamp-2">
+                          {product.productName || "Name not available"}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground line-clamp-3">
+                            {product.description || "Description not available"}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="primary" className="text-xs">
+                              {product.productID || "N/A"}
+                            </Badge>
+                            <Badge
+                              variant="secondary"
+                              className="text-xs text-emerald-500"
+                            >
+                              {product.price || "N/A"}
+                            </Badge>
+                          </div>
+                          <DialogTitle className="text-2xl pr-8">
+                            {product.productName || "Unnamed Product"}
+                          </DialogTitle>
+                        </div>
+                      </div>
+                    </DialogHeader>
+
+                    <div className="space-y-6">
+                      {/* Product Description */}
+                      <div>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {product.description ||
+                            "No description available for this product."}
+                        </p>
+                      </div>
+
+                      {/* Product Details */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <h4 className="font-semibold text-foreground">
+                            Product Details
+                          </h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">
+                                Product ID:
+                              </span>
+                              <span className="font-mono text-sm">
+                                {product.productID || "N/A"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">
+                                Price:
+                              </span>
+                              <span className="font-semibold text-emerald-500">
+                                {formatPrice(product.price)}
+                              </span>
+                            </div>
+                            {product.category && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Category:
+                                </span>
+                                <span>{product.category}</span>
+                              </div>
+                            )}
+                            {product.brand && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Brand:
+                                </span>
+                                <span>{product.brand}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Additional Info */}
+                        <div className="space-y-3">
+                          <h4 className="font-semibold text-foreground">
+                            Additional Information
+                          </h4>
+                          <div className="space-y-2">
+                            {product.sku && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  SKU:
+                                </span>
+                                <span className="font-mono text-sm">
+                                  {product.sku}
+                                </span>
+                              </div>
+                            )}
+                            {product.availability && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Availability:
+                                </span>
+                                <Badge
+                                  variant={
+                                    product.availability === "In Stock"
+                                      ? "default"
+                                      : "secondary"
+                                  }
+                                  className="text-xs"
+                                >
+                                  {product.availability}
+                                </Badge>
+                              </div>
+                            )}
+                            {product.rating && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Rating:
+                                </span>
+                                <span>⭐ {product.rating}/5</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="w-4 h-4 text-emerald-500" />
-                      <span className="text-2xl text-emerald-500">
-                        {formatPrice(product.price).replace("$", "")}
-                      </span>
-                    </div>
-                    <CardTitle className="text-lg line-clamp-2">
-                      {product.productName || "Name not available"}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground line-clamp-3">
-                        {product.description || "Description not available"}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </DialogContent>
+                </Dialog>
               ))}
             </div>
           </div>
