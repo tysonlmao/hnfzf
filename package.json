@@ -31,6 +31,7 @@
     "db:seed": "node scripts/db-utils.js seed",
     "db:init": "node scripts/db-utils.js init",
     "db:check": "node scripts/db-utils.js status",
+    "db:studio": "drizzle-kit studio",
     "validate": "node scripts/validate-setup.js",
     "dev:setup": "npm run db:setup && npm run dev:server"
   },
@@ -52,6 +53,7 @@
     "@types/express": "^5.0.1",
     "@types/node": "^22.15.18",
     "@types/pg": "^8.15.2",
+    "drizzle-kit": "^0.31.4",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3"
   }
