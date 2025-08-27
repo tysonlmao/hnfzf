@@ -96,7 +96,7 @@ server.get("/api/product/:code", async (req: Request, res: Response) => {
 server.post("/api/product/:sku/flags", async (req: Request, res: Response) => {
   try {
     const { sku } = req.params;
-    const { flagType, flagValue, additionalData, description } = req.body;
+    const { flagType, flagValue, additionalData, expiryDate } = req.body;
 
     const result = await db
       .insert(productFlags)
@@ -105,7 +105,7 @@ server.post("/api/product/:sku/flags", async (req: Request, res: Response) => {
         flagType,
         flagValue,
         additionalData,
-        description,
+        expiryDate: expiryDate ? new Date(expiryDate) : null,
       })
       .returning();
 

@@ -121,15 +121,15 @@ async function insertSampleData(env = 'development') {
 
         const sampleData = `
       -- Sample product flags for testing
-      INSERT INTO product_flags (sku, flag_type, flag_value, additional_data, description) VALUES
-      ('5921875', 'special_offer', 'Limited Time', '{"discount": "20%", "expires": "2024-12-31"}', 'Special promotional pricing available'),
-      ('5921875', 'featured', 'homepage', '{"position": "banner", "priority": "high"}', 'Featured product on homepage'),
-      ('5921875', 'warranty_extended', '3_years', '{"original": "1 year", "extended": "3 years"}', 'Extended warranty available'),
-      ('TEST123', 'clearance', 'final_sale', '{"original_price": "$299", "sale_price": "$199"}', 'Clearance item - final sale'),
-      ('TEST123', 'stock_alert', 'low_stock', '{"quantity": 5, "threshold": 10}', 'Low stock warning'),
-      ('DEMO456', 'new_arrival', 'this_month', '{"arrival_date": "2024-01-15", "category": "electronics"}', 'New product this month'),
-      ('DEMO456', 'best_seller', 'top_10', '{"rank": 3, "sales_last_month": 150}', 'Top selling product')
-      ON CONFLICT (sku) DO NOTHING;
+      INSERT INTO product_flags (sku, flag_type, flag_value, additional_data, expiry_date) VALUES
+      ('5921875', 'special_offer', 'Limited Time', '{"discount": "20%"}', '2024-12-31 23:59:59'),
+      ('5921875', 'featured', 'homepage', '{"position": "banner", "priority": "high"}', NULL),
+      ('5921875', 'warranty_extended', '3_years', '{"original": "1 year", "extended": "3 years"}', NULL),
+      ('TEST123', 'clearance', 'final_sale', '{"original_price": "$299", "sale_price": "$199"}', '2024-06-30 23:59:59'),
+      ('TEST123', 'stock_alert', 'low_stock', '{"quantity": 5, "threshold": 10}', NULL),
+      ('DEMO456', 'new_arrival', 'this_month', '{"arrival_date": "2024-01-15", "category": "electronics"}', '2024-02-29 23:59:59'),
+      ('DEMO456', 'best_seller', 'top_10', '{"rank": 3, "sales_last_month": 150}', NULL)
+      ON CONFLICT (sku, flag_type) DO NOTHING;
     `;
 
         await pool.query(sampleData);
@@ -216,18 +216,18 @@ async function cleanDatabase(env = 'development') {
 }
 
 // Add a flag to a product
-async function addFlag(sku, flagType, flagValue, additionalData, description, env = 'development') {
+async function addFlag(sku, flagType, flagValue, additionalData, expiryDate, env = 'development') {
     try {
         info(`Adding flag '${flagType}' to product ${sku}...`);
         const pool = await createConnection(env);
 
         const query = `
-      INSERT INTO product_flags (sku, flag_type, flag_value, additional_data, description)
+      INSERT INTO product_flags (sku, flag_type, flag_value, additional_data, expiry_date)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *;
     `;
 
-        const values = [sku, flagType, flagValue, additionalData, description];
+        const values = [sku, flagType, flagValue, additionalData, expiryDate];
         const result = await pool.query(query, values);
 
         success(`Flag added successfully with ID: ${result.rows[0].id}`);
@@ -295,11 +295,11 @@ function main() {
             break;
 
         case 'add-flag':
-            if (args.length < 5) {
-                error('Usage: node db-utils.js add-flag <sku> <type> <value> <description> [--prod]');
+            if (args.length < 4) {
+                error('Usage: node db-utils.js add-flag <sku> <type> <value> [expiry_date] [--prod]');
                 process.exit(1);
             }
-            addFlag(args[1], args[2], args[3], null, args[4], env);
+            addFlag(args[1], args[2], args[3], null, args[4] || null, env);
             break;
 
         case 'remove-flags':
@@ -333,7 +333,7 @@ Options:
 
 Examples:
   node db-utils.js setup
-  node db-utils.js add-flag 5921875 special_offer "20% Off" "Limited time offer"
+  node db-utils.js add-flag 5921875 special_offer "20% Off" "2024-12-31"
   node db-utils.js status --prod
       `);
             break;

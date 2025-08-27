@@ -5,6 +5,7 @@ import {
   numeric,
   json,
   timestamp,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const products = pgTable("products", {
@@ -21,13 +22,19 @@ export const products = pgTable("products", {
   lastUpdated: text("last_updated").notNull(),
 });
 
-export const productFlags = pgTable("product_flags", {
-  id: serial("id").primaryKey(),
-  sku: text("sku").notNull().unique(),
-  flagType: text("flag_type").notNull(),
-  flagValue: text("flag_value"),
-  additionalData: json("additional_data").$type<Record<string, unknown>>(),
-  description: text("description"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export const productFlags = pgTable(
+  "product_flags",
+  {
+    id: serial("id").primaryKey(),
+    sku: text("sku").notNull(),
+    flagType: text("flag_type").notNull(),
+    flagValue: text("flag_value"),
+    additionalData: json("additional_data").$type<Record<string, unknown>>(),
+    expiryDate: timestamp("expiry_date"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    skuFlagTypeUnique: unique().on(table.sku, table.flagType),
+  })
+);

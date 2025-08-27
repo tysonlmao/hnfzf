@@ -19,13 +19,14 @@ CREATE TABLE IF NOT EXISTS products (
 -- Create product_flags table for additional product information
 CREATE TABLE IF NOT EXISTS product_flags (
     id SERIAL PRIMARY KEY,
-    sku TEXT NOT NULL UNIQUE,
+    sku TEXT NOT NULL,
     flag_type TEXT NOT NULL,
     flag_value TEXT,
     additional_data JSONB,
-    description TEXT,
+    expiry_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(sku, flag_type)
 );
 
 -- Create indexes for better performance

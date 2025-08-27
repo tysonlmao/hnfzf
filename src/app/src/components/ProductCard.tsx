@@ -8,7 +8,7 @@ interface ProductFlag {
   flagType: string;
   flagValue?: string;
   additionalData?: Record<string, unknown>;
-  description?: string;
+  expiryDate?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -81,7 +81,12 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             <div className="flex flex-wrap gap-1">
               {product.flags.map((flag) => (
                 <Badge key={flag.id} variant="outline" className="text-xs">
-                  {flag.flagType}: {flag.flagValue || flag.description || "Set"}
+                  {flag.flagType}: {flag.flagValue || "Set"}
+                  {flag.expiryDate && (
+                    <span className="ml-1 text-muted-foreground">
+                      (expires {new Date(flag.expiryDate).toLocaleDateString()})
+                    </span>
+                  )}
                 </Badge>
               ))}
             </div>

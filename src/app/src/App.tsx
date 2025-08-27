@@ -41,7 +41,7 @@ interface ProductFlag {
   flagType: string;
   flagValue?: string;
   additionalData?: Record<string, unknown>;
-  description?: string;
+  expiryDate?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -401,9 +401,12 @@ function App() {
                                               </span>
                                             )}
                                           </div>
-                                          {flag.description && (
+                                          {flag.expiryDate && (
                                             <p className="text-xs text-muted-foreground mt-1">
-                                              {flag.description}
+                                              Expires:{" "}
+                                              {new Date(
+                                                flag.expiryDate
+                                              ).toLocaleDateString()}
                                             </p>
                                           )}
                                           {flag.additionalData && (
