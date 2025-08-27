@@ -1,4 +1,11 @@
-import { pgTable, serial, text, numeric, json } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  serial,
+  text,
+  numeric,
+  json,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -12,4 +19,15 @@ export const products = pgTable("products", {
   brand: text("brand"),
   category: text("category"),
   lastUpdated: text("last_updated").notNull(),
+});
+
+export const productFlags = pgTable("product_flags", {
+  id: serial("id").primaryKey(),
+  sku: text("sku").notNull().unique(),
+  flagType: text("flag_type").notNull(),
+  flagValue: text("flag_value"),
+  additionalData: json("additional_data").$type<Record<string, unknown>>(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });

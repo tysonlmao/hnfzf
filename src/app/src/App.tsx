@@ -35,6 +35,17 @@ import {
 } from "./components/ui/carousel";
 import "./App.css";
 
+interface ProductFlag {
+  id: number;
+  sku: string;
+  flagType: string;
+  flagValue?: string;
+  additionalData?: Record<string, unknown>;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 interface Product {
   id: number;
   name: string;
@@ -49,6 +60,8 @@ interface Product {
   sku?: string;
   availability?: string;
   rating?: number;
+  hasFlags?: boolean;
+  flags?: ProductFlag[];
 }
 
 interface FocusableCarouselProps {
@@ -221,7 +234,7 @@ function App() {
               {products.map((product) => (
                 <Dialog key={product.id}>
                   <DialogTrigger asChild>
-                    <Card className="group hover:shadow-lg transition-all duration-200 border-border hover:border-primary/20 cursor-pointer hover:scale-[1.02]">
+                    <Card className="group hover:shadow-lg transition-all duration-200 border hover:border-primary/20 cursor-pointer hover:scale-[1.02]">
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
                           <Badge variant="default" className="text-xs">
@@ -361,6 +374,55 @@ function App() {
                                   {formatPrice(product.price)}
                                 </span>
                               </div>
+                              {product.hasFlags && (
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span className="text-muted-foreground">
+                                      Flags:
+                                    </span>
+                                    <span className="text-orange-500 font-medium">
+                                      {product.flags?.length || 0} active
+                                    </span>
+                                  </div>
+                                  {product.flags && (
+                                    <div className="space-y-1">
+                                      {product.flags.map((flag) => (
+                                        <div
+                                          key={flag.id}
+                                          className="bg-muted/50 rounded p-2"
+                                        >
+                                          <div className="flex justify-between items-start">
+                                            <span className="font-medium text-sm">
+                                              {flag.flagType}
+                                            </span>
+                                            {flag.flagValue && (
+                                              <span className="text-xs text-muted-foreground">
+                                                {flag.flagValue}
+                                              </span>
+                                            )}
+                                          </div>
+                                          {flag.description && (
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                              {flag.description}
+                                            </p>
+                                          )}
+                                          {flag.additionalData && (
+                                            <div className="text-xs text-muted-foreground mt-1">
+                                              <pre className="whitespace-pre-wrap">
+                                                {JSON.stringify(
+                                                  flag.additionalData,
+                                                  null,
+                                                  2
+                                                )}
+                                              </pre>
+                                            </div>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                               {product.category && (
                                 <div className="flex justify-between">
                                   <span className="text-muted-foreground">
