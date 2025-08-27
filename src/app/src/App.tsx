@@ -111,7 +111,11 @@ function App() {
     setError("");
 
     try {
-      const response = await axios.get(`/api/product/${searchTerm}`);
+      const response = await axios.get(
+        process.env.NODE_ENV === "development"
+          ? `http://localhost:1337/api/product/${searchTerm}`
+          : `/api/product/${searchTerm}`
+      );
 
       const data = response.data;
       console.log("API Response:", data); // Debug logging
