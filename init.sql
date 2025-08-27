@@ -16,7 +16,22 @@ CREATE TABLE IF NOT EXISTS products (
     last_updated TEXT NOT NULL
 );
 
+-- Create product_flags table for additional product information
+CREATE TABLE IF NOT EXISTS product_flags (
+    id SERIAL PRIMARY KEY,
+    sku TEXT NOT NULL,
+    flag_type TEXT NOT NULL,
+    flag_value TEXT,
+    additional_data JSONB,
+    expiry_date TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(sku, flag_type)
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_products_product_id ON products(product_id);
 CREATE INDEX IF NOT EXISTS idx_products_product_name ON products(product_name);
 CREATE INDEX IF NOT EXISTS idx_products_last_updated ON products(last_updated);
+CREATE INDEX IF NOT EXISTS idx_product_flags_sku ON product_flags(sku);
+CREATE INDEX IF NOT EXISTS idx_product_flags_flag_type ON product_flags(flag_type);

@@ -1,4 +1,12 @@
-import { pgTable, serial, text, numeric, json } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  serial,
+  text,
+  numeric,
+  json,
+  timestamp,
+  unique,
+} from "drizzle-orm/pg-core";
 
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -13,3 +21,20 @@ export const products = pgTable("products", {
   category: text("category"),
   lastUpdated: text("last_updated").notNull(),
 });
+
+export const productFlags = pgTable(
+  "product_flags",
+  {
+    id: serial("id").primaryKey(),
+    sku: text("sku").notNull(),
+    flagType: text("flag_type").notNull(),
+    flagValue: text("flag_value"),
+    additionalData: json("additional_data").$type<Record<string, unknown>>(),
+    expiryDate: timestamp("expiry_date"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    skuFlagTypeUnique: unique().on(table.sku, table.flagType),
+  })
+);

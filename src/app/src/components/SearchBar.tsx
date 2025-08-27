@@ -12,13 +12,13 @@ interface SearchBarProps {
   autoFocus?: boolean;
 }
 
-export const SearchBar = ({ 
-  value, 
-  onChange, 
-  onClear, 
+export const SearchBar = ({
+  value,
+  onChange,
+  onClear,
   className,
   placeholder = "Search products...",
-  autoFocus = false
+  autoFocus = false,
 }: SearchBarProps) => {
   return (
     <div className={cn("relative max-w-2xl", className)}>
@@ -28,7 +28,7 @@ export const SearchBar = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="pl-12 pr-12 h-14 text-lg bg-secondary/50 border-border focus:border-primary focus:ring-primary/20 transition-all duration-200"
+          className="pl-12 pr-12 h-14 text-lg bg-secondary/50 border focus:border-primary focus:ring-primary/20 transition-all duration-200"
           autoFocus={autoFocus}
         />
         {value && (

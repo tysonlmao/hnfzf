@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import {
   Search,
@@ -18,22 +18,19 @@ import {
   CardTitle,
 } from "./components/ui/card";
 import { Badge } from "./components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./components/ui/dialog";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "./components/ui/carousel";
+import { ProductDialog } from "./components/ProductDialog";
 import "./App.css";
+
+interface ProductFlag {
+  id: number;
+  sku: string;
+  flagType: string;
+  flagValue?: string;
+  additionalData?: Record<string, unknown>;
+  expiryDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 interface Product {
   id: number;
@@ -49,53 +46,8 @@ interface Product {
   sku?: string;
   availability?: string;
   rating?: number;
-}
-
-interface FocusableCarouselProps {
-  images: string[];
-  productName?: string;
-}
-
-function FocusableCarousel({ images, productName }: FocusableCarouselProps) {
-  const carouselRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Focus the carousel when it mounts
-    const timer = setTimeout(() => {
-      carouselRef.current?.focus();
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <Carousel ref={carouselRef} className="w-full outline-none" tabIndex={0}>
-      <CarouselContent>
-        {images.map((image, index) => (
-          <CarouselItem key={index}>
-            <div className="aspect-square">
-              <img
-                src={image}
-                alt={`${productName || "Product"} image ${index + 1}`}
-                className="w-full h-full object-cover rounded-lg"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = "none";
-                  target.parentElement!.innerHTML = `
-                    <div class="w-full h-full bg-muted rounded-lg flex items-center justify-center">
-                      <svg class="w-16 h-16 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
-                      </svg>
-                    </div>
-                  `;
-                }}
-              />
-            </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-    </Carousel>
-  );
+  hasFlags?: boolean;
+  flags?: ProductFlag[];
 }
 
 function App() {
@@ -111,7 +63,11 @@ function App() {
     setError("");
 
     try {
-      const response = await axios.get(`/api/product/${searchTerm}`);
+      const response = await axios.get(
+        process.env.NODE_ENV === "development"
+          ? `http://localhost:1337/api/product/${searchTerm}`
+          : `/api/product/${searchTerm}`
+      );
 
       const data = response.data;
       console.log("API Response:", data); // Debug logging
@@ -215,9 +171,12 @@ function App() {
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {products.map((product) => (
-                <Dialog key={product.id}>
-                  <DialogTrigger asChild>
-                    <Card className="group hover:shadow-lg transition-all duration-200 border-border hover:border-primary/20 cursor-pointer hover:scale-[1.02]">
+                <ProductDialog
+                  key={product.id}
+                  product={product}
+                  formatPrice={formatPrice}
+                  trigger={
+                    <Card className="group hover:shadow-lg transition-all duration-200 border hover:border-primary/20 cursor-pointer hover:scale-[1.02]">
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
                           <Badge variant="default" className="text-xs">
@@ -247,183 +206,8 @@ function App() {
                         </div>
                       </CardContent>
                     </Card>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="default" className="text-xs">
-                              {product.productID || "N/A"}
-                            </Badge>
-                            <Badge
-                              variant="secondary"
-                              className="text-xs text-emerald-500"
-                            >
-                              {product.price || "N/A"}
-                            </Badge>
-                          </div>
-                          <DialogTitle className="text-2xl pr-8">
-                            {product.productName || "Unnamed Product"}
-                          </DialogTitle>
-                        </div>
-                      </div>
-                    </DialogHeader>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Left Side - Image Carousel */}
-                      <div className="space-y-4">
-                        {(() => {
-                          const productImages = [];
-
-                          // Only use images from the images array (skip thumbnail imageUrl)
-                          if (product.images && Array.isArray(product.images)) {
-                            productImages.push(...product.images);
-                          }
-
-                          // Remove duplicates (though there shouldn't be any now)
-                          const uniqueImages = [...new Set(productImages)];
-
-                          if (uniqueImages.length === 0) {
-                            return (
-                              <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
-                                <Package className="w-16 h-16 text-muted-foreground" />
-                              </div>
-                            );
-                          }
-
-                          if (uniqueImages.length === 1) {
-                            return (
-                              <div className="aspect-square">
-                                <img
-                                  src={uniqueImages[0]}
-                                  alt={product.productName || "Product image"}
-                                  className="w-full h-full object-cover rounded-lg"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = "none";
-                                    target.parentElement!.innerHTML = `
-                                      <div class="w-full h-full bg-muted rounded-lg flex items-center justify-center">
-                                        <svg class="w-16 h-16 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
-                                        </svg>
-                                      </div>
-                                    `;
-                                  }}
-                                />
-                              </div>
-                            );
-                          }
-
-                          return (
-                            <FocusableCarousel
-                              images={uniqueImages}
-                              productName={product.productName}
-                            />
-                          );
-                        })()}
-                      </div>
-
-                      {/* Right Side - Product Information */}
-                      <div className="space-y-6">
-                        {/* Product Description */}
-                        <div>
-                          <p className="text-muted-foreground leading-relaxed">
-                            {product.description ||
-                              "No description available for this product."}
-                          </p>
-                        </div>
-
-                        {/* Product Details */}
-                        <div className="grid grid-cols-1 gap-4">
-                          <div className="space-y-3">
-                            <h4 className="font-semibold text-foreground">
-                              Product Details
-                            </h4>
-                            <div className="space-y-2">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">
-                                  Product ID:
-                                </span>
-                                <span className="font-mono text-sm">
-                                  {product.productID || "N/A"}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">
-                                  Price:
-                                </span>
-                                <span className="font-semibold text-emerald-500">
-                                  {formatPrice(product.price)}
-                                </span>
-                              </div>
-                              {product.category && (
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Category:
-                                  </span>
-                                  <span>{product.category}</span>
-                                </div>
-                              )}
-                              {product.brand && (
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Brand:
-                                  </span>
-                                  <span>{product.brand}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Additional Info */}
-                          <div className="space-y-3">
-                            <h4 className="font-semibold text-foreground">
-                              Additional Information
-                            </h4>
-                            <div className="space-y-2">
-                              {product.sku && (
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    SKU:
-                                  </span>
-                                  <span className="font-mono text-sm">
-                                    {product.sku}
-                                  </span>
-                                </div>
-                              )}
-                              {product.availability && (
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Availability:
-                                  </span>
-                                  <Badge
-                                    variant={
-                                      product.availability === "In Stock"
-                                        ? "default"
-                                        : "secondary"
-                                    }
-                                    className="text-xs"
-                                  >
-                                    {product.availability}
-                                  </Badge>
-                                </div>
-                              )}
-                              {product.rating && (
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Rating:
-                                  </span>
-                                  <span>⭐ {product.rating}/5</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                  }
+                />
               ))}
             </div>
           </div>
