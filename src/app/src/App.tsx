@@ -7,6 +7,7 @@ import {
   Info,
   ExternalLink,
   Hash,
+  Scan,
 } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
@@ -19,6 +20,8 @@ import {
 } from "./components/ui/card";
 import { Badge } from "./components/ui/badge";
 import { ProductDialog } from "./components/ProductDialog";
+import { BarcodeScannerComponent } from "./components/BarcodeScanner";
+import { useIsMobile } from "./hooks/useIsMobile";
 import "./App.css";
 
 interface ProductFlag {
@@ -55,6 +58,8 @@ function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
@@ -84,6 +89,35 @@ function App() {
     if (e.key === "Enter") {
       handleSearch();
     }
+  };
+
+  const handleBarcodeScanned = (barcode: string) => {
+    setSearchTerm(barcode);
+    setShowBarcodeScanner(false);
+    // Automatically search after barcode is scanned
+    setTimeout(async () => {
+      if (!barcode.trim()) return;
+
+      setLoading(true);
+      setError("");
+
+      try {
+        const response = await axios.get(
+          process.env.NODE_ENV === "development"
+            ? `http://localhost:1337/api/product/${barcode}`
+            : `/api/product/${barcode}`
+        );
+
+        const data = response.data;
+        console.log("API Response:", data); // Debug logging
+        setProducts(Array.isArray(data) ? data : [data]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 100);
   };
 
   const formatPrice = (price: string | number | undefined) => {
@@ -127,23 +161,39 @@ function App() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Enter product ID or search term..."
-                  className="pl-10 h-12 text-base"
+                  className="pl-10 pr-20 h-12 text-base"
                 />
-              </div>
-              <Button onClick={handleSearch} disabled={loading} size="lg">
-                {loading ? (
-                  <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleSearch}
+                  disabled={loading}
+                  size="sm"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-10"
+                >
+                  {loading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Searching...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
+                  ) : (
                     <Search className="w-4 h-4" />
-                    Search
-                  </div>
-                )}
-              </Button>
+                  )}
+                </Button>
+              </div>
+              {isMobile && (
+                <Button
+                  onClick={() => setShowBarcodeScanner(true)}
+                  disabled={loading}
+                  size="lg"
+                  variant="outline"
+                  className="flex-shrink-0"
+                >
+                  <Scan className="w-4 h-4" />
+                </Button>
+              )}
             </div>
+            {isMobile && (
+              <p className="text-xs text-muted-foreground text-center">
+                <Scan className="w-3 h-3 inline mr-1" />
+                Tap the scan button to use your camera for barcode scanning
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -227,6 +277,13 @@ function App() {
             </CardContent>
           </Card>
         )}
+
+        {/* Barcode Scanner */}
+        <BarcodeScannerComponent
+          isOpen={showBarcodeScanner}
+          onScanComplete={handleBarcodeScanned}
+          onClose={() => setShowBarcodeScanner(false)}
+        />
       </div>
     </div>
   );
