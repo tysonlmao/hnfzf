@@ -161,8 +161,20 @@ function App() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Enter product ID or search term..."
-                  className="pl-10 h-12 text-base"
+                  className="pl-10 pr-20 h-12 text-base"
                 />
+                <Button
+                  onClick={handleSearch}
+                  disabled={loading}
+                  size="sm"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-10"
+                >
+                  {loading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Search className="w-4 h-4" />
+                  )}
+                </Button>
               </div>
               {isMobile && (
                 <Button
@@ -175,19 +187,6 @@ function App() {
                   <Scan className="w-4 h-4" />
                 </Button>
               )}
-              <Button onClick={handleSearch} disabled={loading} size="lg">
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Searching...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Search className="w-4 h-4" />
-                    Search
-                  </div>
-                )}
-              </Button>
             </div>
             {isMobile && (
               <p className="text-xs text-muted-foreground text-center">
