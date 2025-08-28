@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import {
   Search,
@@ -8,6 +9,7 @@ import {
   ExternalLink,
   Hash,
   Scan,
+  Settings,
 } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
@@ -145,8 +147,16 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Search Section */}
-        <h1 className="text-center mb-5">hnfzf</h1>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <h1 className="text-center flex-1 text-2xl font-bold">hnfzf</h1>
+          <Link to="/admin">
+            <Button variant="outline" size="sm">
+              <Settings className="w-4 h-4 mr-2" />
+              Admin
+            </Button>
+          </Link>
+        </div>
         <Card className="max-w-2xl mx-auto mb-8">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl">Product Search</CardTitle>
@@ -254,6 +264,21 @@ function App() {
                             {product.description || "Description not available"}
                           </p>
                         </div>
+
+                        {/* Optus Plans Badge */}
+                        {product.flags &&
+                          product.flags.some(
+                            (flag) => flag.flagType === "optus"
+                          ) && (
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="secondary"
+                                className="bg-orange-100 text-orange-700 border-orange-200"
+                              >
+                                📱 Optus Plans Available
+                              </Badge>
+                            </div>
+                          )}
                       </CardContent>
                     </Card>
                   }

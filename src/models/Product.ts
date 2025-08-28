@@ -6,6 +6,7 @@ import {
   json,
   timestamp,
   unique,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const products = pgTable("products", {
@@ -38,3 +39,9 @@ export const productFlags = pgTable(
     skuFlagTypeUnique: unique().on(table.sku, table.flagType),
   })
 );
+
+export const flagTypes = pgTable("flag_types", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
